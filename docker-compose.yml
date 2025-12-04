@@ -24,7 +24,7 @@ services:
     build:
       context: ./producer-consumer
       dockerfile: Dockerfile
-    container_name: test-assignment1
+    container_name: test-1
     environment:
       - PYTHONUNBUFFERED=1
     command: python -m unittest discover tests -v
@@ -36,7 +36,7 @@ services:
     build:
       context: ./csv-analysis
       dockerfile: Dockerfile
-    container_name: test-assignment2
+    container_name: test-2
     environment:
       - PYTHONUNBUFFERED=1
     command: python -m unittest discover tests -v

@@ -9,12 +9,12 @@ The easiest way to run and evaluate both is using Docker Compose.
 
 ### Run Demos
 
-Run both assignment demos:
+Run both demos:
 ```bash
 docker-compose up
 ```
 
-Run individual assignments:
+Run individual :
 ```bash
 # Producer-Consumer
 docker-compose up producer-consumer
@@ -32,10 +32,10 @@ docker-compose --profile test up
 
 Run tests for individual :
 ```bash
-# Test Assignment 1
+# Test 1
 docker-compose --profile test up test-producer-consumer
 
-# Test Assignment 2
+# Test 2
 docker-compose --profile test up test-csv-analysis
 ```
 
@@ -51,7 +51,7 @@ docker-compose down --rmi all  # Also remove images
 
 If you prefer to run without Docker:
 
-### Assignment 1: Producer-Consumer
+### 1: Producer-Consumer
 
 ```bash
 cd producer-consumer
@@ -61,7 +61,7 @@ python examples/demo.py
 python -m unittest discover tests
 ```
 
-### Assignment 2: CSV Analysis
+### 2: CSV Analysis
 
 ```bash
 cd csv-analysis
