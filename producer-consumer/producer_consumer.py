@@ -2,53 +2,77 @@ import threading
 import time
 
 
-class ProducerConsumer:
-    def __init__(self, buffer_size):
-        self.source = []
+class SharedBuffer:
+    def __init__(self, capacity):
+        self.capacity = capacity
         self.buffer = []
-        self.destination = []
-        self.buffer_size = buffer_size
-        self.producer_done = False
         self.condition = threading.Condition()
+        self.production_complete = False
 
-    def produce(self):
-        while len(self.source) > 0:
-            with self.condition:
-                while len(self.buffer) >= self.buffer_size:
-                    print("Buffer full, producer waiting...")
-                    self.condition.wait()
-
-                item = self.source.pop(0)
-                self.buffer.append(item)
-                print(f"Produced: {item['id']} - Buffer size: {len(self.buffer)}")
-                self.condition.notify()
-
-            time.sleep(0.1)
-
+    def put(self, item):
         with self.condition:
-            self.producer_done = True
+            while len(self.buffer) >= self.capacity:
+                self.condition.wait()
+
+            self.buffer.append(item)
             self.condition.notify()
 
-        print("Producer finished")
+    def get(self):
+        with self.condition:
+            while len(self.buffer) == 0 and not self.production_complete:
+                self.condition.wait()
 
-    def consume(self):
+            if len(self.buffer) == 0:
+                return None
+
+            item = self.buffer.pop(0)
+            self.condition.notify()
+            return item
+
+    def mark_complete(self):
+        with self.condition:
+            self.production_complete = True
+            self.condition.notify()
+
+    def size(self):
+        return len(self.buffer)
+
+
+class Producer:
+    def __init__(self, shared_buffer, source_data):
+        self.shared_buffer = shared_buffer
+        self.source_data = source_data
+        self.items_produced = 0
+
+    def run(self):
+        for item in self.source_data:
+            self.shared_buffer.put(item)
+            self.items_produced += 1
+            print(f"[Producer] Produced message {item['id']} | Buffer: {self.shared_buffer.size()}/{self.shared_buffer.capacity}")
+            time.sleep(0.1)
+
+        self.shared_buffer.mark_complete()
+        print(f"[Producer] Completed - {self.items_produced} items produced")
+
+
+class Consumer:
+    def __init__(self, shared_buffer):
+        self.shared_buffer = shared_buffer
+        self.consumed_items = []
+        self.items_consumed = 0
+
+    def run(self):
         while True:
-            with self.condition:
-                while len(self.buffer) == 0 and not self.producer_done:
-                    print("Buffer empty, consumer waiting...")
-                    self.condition.wait()
+            item = self.shared_buffer.get()
+            if item is None:
+                break
 
-                if len(self.buffer) == 0 and self.producer_done:
-                    break
-
-                item = self.buffer.pop(0)
-                self.destination.append(item)
-                print(f"Consumed: {item['id']} - Buffer size: {len(self.buffer)}")
-                self.condition.notify()
-
+            self.consumed_items.append(item)
+            self.items_consumed += 1
+            print(f"[Consumer] Consumed message {item['id']} | Buffer: {self.shared_buffer.size()}/{self.shared_buffer.capacity}")
             time.sleep(0.15)
 
-        print("Consumer finished")
+        print(f"[Consumer] Completed - {self.items_consumed} items consumed")
 
 
 def create_messages(count):
@@ -67,14 +91,21 @@ def create_messages(count):
 
 
 def main():
-    pc = ProducerConsumer(buffer_size=5)
-    pc.source = create_messages(20)
+    buffer_capacity = 5
+    message_count = 20
 
-    print(f"Starting with {len(pc.source)} messages in source")
-    print(f"Buffer capacity: {pc.buffer_size}\n")
+    print(f"--- Producer-Consumer Pattern Demo ---")
+    print(f"Buffer capacity: {buffer_capacity}")
+    print(f"Total messages: {message_count}\n")
 
-    producer_thread = threading.Thread(target=pc.produce, name="Producer")
-    consumer_thread = threading.Thread(target=pc.consume, name="Consumer")
+    shared_buffer = SharedBuffer(capacity=buffer_capacity)
+    messages = create_messages(message_count)
+
+    producer = Producer(shared_buffer, messages)
+    consumer = Consumer(shared_buffer)
+
+    producer_thread = threading.Thread(target=producer.run, name="ProducerThread")
+    consumer_thread = threading.Thread(target=consumer.run, name="ConsumerThread")
 
     producer_thread.start()
     consumer_thread.start()
@@ -82,10 +113,11 @@ def main():
     producer_thread.join()
     consumer_thread.join()
 
-    print(f"\nCompleted!")
-    print(f"Source: {len(pc.source)} items")
-    print(f"Buffer: {len(pc.buffer)} items")
-    print(f"Destination: {len(pc.destination)} items")
+    print(f"\n--- Execution Summary ---")
+    print(f"Items produced: {producer.items_produced}")
+    print(f"Items consumed: {consumer.items_consumed}")
+    print(f"Remaining in buffer: {shared_buffer.size()}")
+    print(f"Verification: {'✓ Success' if producer.items_produced == consumer.items_consumed else '✗ Failed'}")
 
 
 if __name__ == "__main__":
