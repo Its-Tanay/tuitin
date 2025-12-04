@@ -56,6 +56,50 @@ class SalesAnalyzer:
         end = pd.to_datetime(end_date)
         return self.filter_by(lambda row: start <= row['date'] <= end)
 
+    def custom_aggregation_with_reduce(self, group_field, value_field):
+        groups = {}
+        for _, row in self.data.iterrows():
+            key = row[group_field]
+            if key not in groups:
+                groups[key] = []
+            groups[key].append(row[value_field])
+
+        return {
+            key: reduce(lambda acc, val: acc + val, values, 0)
+            for key, values in groups.items()
+        }
+
+    def apply_discount_lambda(self, discount_rate):
+        return self.data.apply(
+            lambda row: {**row.to_dict(), 'discounted_price': row['price'] * (1 - discount_rate)},
+            axis=1
+        )
+
+    def filter_and_transform(self, filter_lambda, transform_lambda):
+        filtered = self.data[self.data.apply(filter_lambda, axis=1)]
+        return filtered.apply(transform_lambda, axis=1)
+
+    def top_n_by_custom_metric(self, n, metric_lambda):
+        self.data['custom_metric'] = self.data.apply(metric_lambda, axis=1)
+        result = self.data.nlargest(n, 'custom_metric')[['transaction_id', 'product', 'custom_metric']]
+        self.data.drop('custom_metric', axis=1, inplace=True)
+        return result
+
+    def category_statistics_with_lambdas(self):
+        return self.data.groupby('category').agg({
+            'revenue': [
+                ('total', lambda x: x.sum()),
+                ('average', lambda x: x.mean()),
+                ('max', lambda x: x.max()),
+                ('count', lambda x: x.count())
+            ]
+        })
+
+    def region_performance_score(self):
+        return self.data.groupby('region').apply(
+            lambda group: (group['revenue'].sum() / group['revenue'].count()) * group['quantity'].sum()
+        ).sort_values(ascending=False)
+
 def main():
     analyzer = SalesAnalyzer('sales_data.csv')
 
@@ -93,6 +137,25 @@ def main():
     print("8. Sales in Q1 2024:")
     q1_sales = analyzer.filter_by_date_range('2024-01-01', '2024-03-31')
     print(f"Total Q1 Revenue: ${q1_sales['revenue'].sum():.2f}")
+    print()
+
+    print("9. Custom Aggregation with Reduce (Revenue by Category):")
+    reduce_result = analyzer.custom_aggregation_with_reduce('category', 'revenue')
+    for category, total in sorted(reduce_result.items(), key=lambda x: x[1], reverse=True):
+        print(f"{category}: ${total:.2f}")
+    print()
+
+    print("10. Category Statistics with Lambda Aggregations:")
+    print(analyzer.category_statistics_with_lambdas())
+    print()
+
+    print("11. Top 5 Transactions by Custom Metric (revenue * quantity):")
+    top_custom = analyzer.top_n_by_custom_metric(5, lambda row: row['revenue'] * row['quantity'])
+    print(top_custom)
+    print()
+
+    print("12. Region Performance Score:")
+    print(analyzer.region_performance_score())
     print()
 
 if __name__ == '__main__':
