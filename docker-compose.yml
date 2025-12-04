@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  producer-consumer:
+    build:
+      context: ./producer-consumer
+      dockerfile: Dockerfile
+    container_name: producer-consumer
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: python examples/demo.py
+
+  csv-analysis:
+    build:
+      context: ./csv-analysis
+      dockerfile: Dockerfile
+    container_name: csv-analysis
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: python examples/demo.py
+
+  # Service to run tests for producer-consumer
+  test-producer-consumer:
+    build:
+      context: ./producer-consumer
+      dockerfile: Dockerfile
+    container_name: test-assignment1
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: python -m unittest discover tests -v
+    profiles:
+      - test
+
+  # Service to run tests for csv-analysis
+  test-csv-analysis:
+    build:
+      context: ./csv-analysis
+      dockerfile: Dockerfile
+    container_name: test-assignment2
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: python -m unittest discover tests -v
+    profiles:
+      - test

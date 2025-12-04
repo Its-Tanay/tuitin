@@ -1,0 +1,19 @@
+# Virtual environment
+venv/
+env/
+*.pyc
+__pycache__/
+
+# IDE files
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+README.md
+
+# Data generation script (not needed in container)
+generate_data.py
