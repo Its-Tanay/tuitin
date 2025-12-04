@@ -5,7 +5,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from src.operations import filter_data, map_data, aggregate_data, group_and_sum
 
-
 class TestOperations(unittest.TestCase):
 
     def setUp(self):
@@ -111,7 +110,6 @@ class TestOperations(unittest.TestCase):
         mapped = map_data(filtered, lambda x: x['revenue'])
         result = aggregate_data(mapped, lambda acc, x: acc + x, 0)
         self.assertEqual(result, 1200)
-
 
 if __name__ == '__main__':
     unittest.main()
