@@ -4,7 +4,7 @@ sys.path.insert(0, '..')
 from main import SalesAnalyzer
 
 def main():
-    analyzer = SalesAnalyzer('../data/sales_data.csv')
+    analyzer = SalesAnalyzer('data/sales_data.csv')
 
     print("--- Sales Data Analysis with Functional Programming ---\n")
 

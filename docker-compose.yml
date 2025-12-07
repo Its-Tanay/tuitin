@@ -8,6 +8,7 @@ services:
     container_name: producer-consumer
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
     command: python examples/demo.py
 
   csv-analysis:
@@ -17,6 +18,7 @@ services:
     container_name: csv-analysis
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
     command: python examples/demo.py
 
   # Service to run tests for producer-consumer
