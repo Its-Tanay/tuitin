@@ -7,20 +7,25 @@ The easiest way to run and evaluate both is using Docker Compose.
 - Docker and Docker Compose installed
 - No other dependencies needed
 
-### Run Demos
+### Run Demos (Interactive)
 
-Run both demos:
+**IMPORTANT:** For interactive demos, use `docker-compose run`:
+
 ```bash
-docker-compose up
+# Producer-Consumer (Interactive)
+docker-compose run --rm producer-consumer
+
+# CSV Analysis (Interactive)
+docker-compose run --rm csv-analysis
 ```
 
-Run individual :
+Or use the helper scripts:
 ```bash
 # Producer-Consumer
-docker-compose up producer-consumer
+./run-producer-consumer.sh
 
 # CSV Analysis
-docker-compose up csv-analysis
+./run-csv-analysis.sh
 ```
 
 ### Run Tests

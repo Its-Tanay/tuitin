@@ -6,6 +6,8 @@ services:
       context: ./producer-consumer
       dockerfile: Dockerfile
     container_name: producer-consumer
+    stdin_open: true
+    tty: true
     environment:
       - PYTHONUNBUFFERED=1
       - PYTHONPATH=/app
@@ -16,6 +18,8 @@ services:
       context: ./csv-analysis
       dockerfile: Dockerfile
     container_name: csv-analysis
+    stdin_open: true
+    tty: true
     environment:
       - PYTHONUNBUFFERED=1
       - PYTHONPATH=/app
