@@ -19,15 +19,6 @@ docker-compose run --rm producer-consumer
 docker-compose run --rm csv-analysis
 ```
 
-Or use the helper scripts:
-```bash
-# Producer-Consumer
-./run-producer-consumer.sh
-
-# CSV Analysis
-./run-csv-analysis.sh
-```
-
 ### Run Tests
 
 Run all tests for both :
